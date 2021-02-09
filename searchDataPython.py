@@ -51,12 +51,12 @@ for row in reader:
     term = term.lower()
     
     # there's an easier way to add to dict in the readthedocs for pyspellchecker
-    corrected_text = spell.correction(term)
+    corrected_term = spell.correction(term)
     
-    row['Corrected'] = corrected_text #1
+    row['Corrected'] = corrected_term #1
     
-    query = corrected_text
-    site= 'https://api.lib.harvard.edu/v2/items?q='+query+'&limit=50'
+    query = corrected_term
+    site= 'https://api.lib.harvard.edu/v2/items?q='+query+'&limit=150'
     # place into their regex
     site = site.replace(" ", "%20")
     site = str(site)
@@ -65,34 +65,54 @@ for row in reader:
     req = urllib2.Request(site,headers=hdr)
     page = urllib2.urlopen(req)
     soup = BeautifulSoup(page, "xml")
-    print(site)
+    #print(site)
 
     subjectText = []
     # first, topics
     subjects = soup.find_all('mods:topic')
     for subject in subjects:
        #print(subject.get_text())
-       subjectText.append(subject.get_text())
-
+        subjectText.append(subject.get_text())
+    
+    while 'History' in subjectText: subjectText.remove('History')
+    
     regionText = []
     regions = soup.find_all('mods:geographic')
     for region in regions:
        #print(region.get_text())
        regionText.append(region.get_text())
+    
+    genreText = []
+    genres = soup.find_all('mods:genre')
+    for genre in genres:
+        #print(genre.get_text())
+        genreText.append(genre.get_text())
+    
+    while 'bibliography' in genreText: genreText.remove('bibliography')
 
+    
     # extract x most common phrases   
     most_common_words = [word for word, word_count in Counter(subjectText).most_common(5)]
 
     most_common_geographic = [word for word, word_count in Counter(regionText).most_common(1)]
+    
+    most_common_genre = [word for word, word_count in Counter(genreText).most_common(1)]
 
     # combine most common subjects and regions
     # most_common_words= most_common_words+most_common_geographic
-    print(most_common_words) 
+    print("Term: " + corrected_term)
+    print("Topics: ")
+    print(most_common_words)
+    print("Geographic: ")
+    print(most_common_geographic)
+    print("Genre: ")
+    print(most_common_genre)
     # open library subjects for keyword result
     # 5 categories are the 5 most common subjects for the keyword search
     # add to dictionary and automatically add categories if that term is searched again
     
     writer.writerow(row)
+    time.sleep(1)
     
     #print(term)
     #print(corrected_text)

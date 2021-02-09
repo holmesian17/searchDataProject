@@ -48,10 +48,12 @@ for row in reader:
     # this API also seems to have subjects and other fun stuff
     # could be useful in the categories thing
     # for example, most common subject of results = the category???
+    # only works for books currently, how to handle dvds, etc.?
+    term = term.split()
+    term = '+'.join(term)
     apiURL = str("http://openlibrary.org/search.json?title=" + term)
     # for multiple words it needs to split them and add a + between
-    print(apiURL)
-    books = http.request('GET', "http://openlibrary.org/search.json?title=the+lord+of+the+rings")
+    books = http.request('GET', apiURL)
     bookDict = json.loads(books.data.decode('UTF-8'))
     
     writer.writerow(row)

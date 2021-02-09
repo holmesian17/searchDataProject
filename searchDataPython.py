@@ -15,7 +15,8 @@ import time
 
 # CSV header names
 fieldnames = ['Search','Corrected','Timestamp','IP',
-              'Search Function','Category']
+              'Search Function','Cat1','Cat2','Cat3',
+              'Cat4','Cat5','Geo','Genre']
 
 search_file_in = open('rawDataSampleWithCats.csv', "rt")
 reader = csv.DictReader(search_file_in)
@@ -26,12 +27,12 @@ writer = csv.DictWriter(search_file_out,
 writer.writeheader()
 # categoryDict = {}
 # need to save these to an external file to pull from
-
+'''
 with open("categoryDict.json", "r") as config_file:
     category_dict = json.load(config_file)
 
 print(category_dict)
-
+'''
 spell = SpellChecker(distance=1)
        
 
@@ -46,7 +47,7 @@ for row in reader:
     
     #adding keys and values to categories
     term = row['Search'] #0
-    category = row['Category'] #5
+    # category = row['Category'] #5
     
     term = term.lower()
     
@@ -97,7 +98,7 @@ for row in reader:
     most_common_geographic = [word for word, word_count in Counter(regionText).most_common(1)]
     
     most_common_genre = [word for word, word_count in Counter(genreText).most_common(1)]
-
+        
     # combine most common subjects and regions
     # most_common_words= most_common_words+most_common_geographic
     print("Term: " + corrected_term)
@@ -110,6 +111,23 @@ for row in reader:
     # open library subjects for keyword result
     # 5 categories are the 5 most common subjects for the keyword search
     # add to dictionary and automatically add categories if that term is searched again
+    if not most_common_words:
+        row['Cat1'] = "N/a"
+    else:
+        row['Cat1'] = most_common_words[0]
+        row['Cat2'] = most_common_words[1]
+        row['Cat3'] = most_common_words[2]
+        row['Cat4'] = most_common_words[3]
+        row['Cat5'] = most_common_words[4] # needs to handle if there isn't a 5th term, 4th term, etc.
+    if not most_common_geographic:
+        row['Geo'] = "N/a"
+    else:
+        row['Geo'] = most_common_geographic[0]
+    if not most_common_genre:
+        row['Genre'] = "N/a"
+    else:
+        row['Genre'] = most_common_genre[0]
+        
     
     writer.writerow(row)
     time.sleep(1)

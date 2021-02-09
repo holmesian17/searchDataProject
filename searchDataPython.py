@@ -38,11 +38,13 @@ for row in reader:
     category = row['Category'] #5
     
     term = term.lower()
-    
+    # there's an easier way to add to dict in the readthedocs for pyspellchecker
     correctedText = spell.correction(term)
     
     row['Corrected'] = correctedText #1
-    
+    '''
+    # this drastically slows things down - maybe not show off at first but talk out
+    # with Tova
     http = urllib3.PoolManager()
     # make the API search for whatever the search term was
     # this API also seems to have subjects and other fun stuff
@@ -55,11 +57,11 @@ for row in reader:
     # for multiple words it needs to split them and add a + between
     books = http.request('GET', apiURL)
     bookDict = json.loads(books.data.decode('UTF-8'))
-    
+    '''
     writer.writerow(row)
     
-    #print(term)
-    #print(correctedText)
+    print(term)
+    print(correctedText)
   
     
 '''

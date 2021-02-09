@@ -1,10 +1,17 @@
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
 import csv
 import hashlib
 import json
 from spellchecker import SpellChecker
-import urllib3
+import os,sys
+import pickle
 from bs4 import BeautifulSoup
-import requests
+import pandas as pd    
+from collections import Counter
+import time
 
 # CSV header names
 fieldnames = ['Search','Corrected','Timestamp','IP',
@@ -26,6 +33,7 @@ with open("categoryDict.json", "r") as config_file:
 print(category_dict)
 
 spell = SpellChecker(distance=1)
+       
 
 for row in reader:
     #hashing ip address
@@ -46,29 +54,48 @@ for row in reader:
     corrected_text = spell.correction(term)
     
     row['Corrected'] = corrected_text #1
+    
+    query = corrected_text
+    site= 'https://api.lib.harvard.edu/v2/items?q='+query+'&limit=50'
+    # place into their regex
+    site = site.replace(" ", "%20")
+    site = str(site)
 
+    hdr = {'User-Agent': 'Mozilla/5.0'}
+    req = urllib2.Request(site,headers=hdr)
+    page = urllib2.urlopen(req)
+    soup = BeautifulSoup(page, "xml")
+    print(site)
+
+    subjectText = []
+    # first, topics
+    subjects = soup.find_all('mods:topic')
+    for subject in subjects:
+       #print(subject.get_text())
+       subjectText.append(subject.get_text())
+
+    regionText = []
+    regions = soup.find_all('mods:geographic')
+    for region in regions:
+       #print(region.get_text())
+       regionText.append(region.get_text())
+
+    # extract x most common phrases   
+    most_common_words = [word for word, word_count in Counter(subjectText).most_common(5)]
+
+    most_common_geographic = [word for word, word_count in Counter(regionText).most_common(1)]
+
+    # combine most common subjects and regions
+    # most_common_words= most_common_words+most_common_geographic
+    print(most_common_words) 
     # open library subjects for keyword result
     # 5 categories are the 5 most common subjects for the keyword search
     # add to dictionary and automatically add categories if that term is searched again
     
-    # ALT: harvard library api - api.harvard.edu/v2/items?q=peanuts - returns XML
-    # harvard library api - api.harvard.edu/v2/items.json?q=peanuts - returns JSON
-    # 5 most common topics in the XML for the five
-    # add to dictionary and automatically add categories if that term is searched again
-    # wiki.harvard.edu/confluence/display/LibraryStaffDoc/LibraryCloud+APIs
-    
-    http = urllib3.PoolManager()
-    API_URL = str("https://api.lib.harvard.edu/v2/items?q=" + term)
-    topicJSON = http.request('GET', API_URL)
-    soup = BeautifulSoup(topicJSON, 'html.parser')
-    site_json=json.loads(soup.text)
-
-    print([d.get('topic') for d in site_json['subject'] if d.get('topic')])
-    
     writer.writerow(row)
     
-    print(term)
-    print(corrected_text)
+    #print(term)
+    #print(corrected_text)
   
     
 '''

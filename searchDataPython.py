@@ -57,7 +57,7 @@ for row in reader:
     row['Corrected'] = corrected_term #1
     
     query = corrected_term
-    site= 'https://api.lib.harvard.edu/v2/items?q='+query+'&limit=150'
+    site= 'https://api.lib.harvard.edu/v2/items?q='+query+'&limit=250'
     # place into their regex
     site = site.replace(" ", "%20")
     site = str(site)
@@ -117,8 +117,17 @@ for row in reader:
         row['Cat1'] = most_common_words[0]
         row['Cat2'] = most_common_words[1]
         row['Cat3'] = most_common_words[2]
-        row['Cat4'] = most_common_words[3]
-        row['Cat5'] = most_common_words[4] # needs to handle if there isn't a 5th term, 4th term, etc.
+    # needs to handle if there isn't a 5th term, 4th term, etc.
+        if not most_common_words[3]:
+            row['Cat4'] = ""
+            break
+        else:
+            row['Cat4'] = most_common_words[3]
+
+            if not most_common_words[4]:
+                row['Cat5'] = ""
+            else:
+                row['Cat5'] = most_common_words[4]
     if not most_common_geographic:
         row['Geo'] = "N/a"
     else:
@@ -130,7 +139,7 @@ for row in reader:
         
     
     writer.writerow(row)
-    time.sleep(1)
+    #time.sleep(1)
     
     #print(term)
     #print(corrected_text)

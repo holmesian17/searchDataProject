@@ -15,9 +15,10 @@ import pandas as pd
 from collections import Counter
 import json
 import requests
+import pprint
 
 
-query = 'The Fast and the Furious'
+query = 'Kentucky'
 query = query.lower()
 
 site = 'https://openlibrary.org/search.json?q='+query+'&limit=250'
@@ -37,24 +38,40 @@ print(site)
 
 response = requests.get(site)
 siteData = json.loads(response.text)
-print(siteData)
+#print(siteData)
+
+data = siteData['docs']
+subjects = [item.get('subject') for item in data]
+
+removeNoneType = [i for i in subjects if i] 
+
+flat_list = [item for sublist in removeNoneType for item in sublist]
+
+#print('Original List: ',subjects)
+#print('Flattened list: ',flat_list)
+       
 
 from collections import Counter
 
-### NEEDS TO BE CHANGED TO PULL FROM JSON, NOT XML###
 subjectText = []
-# first, topics
-subjects = soup.find_all('mods:topic')
-for subject in subjects:
+
+for subject in flat_list:
    #print(subject.get_text())
-   subjectLower = subject.get_text().lower() 
+   subjectLower = subject.lower() 
    subjectText.append(subjectLower)
 
-while 'history' in subjectText: subjectText.remove('history')
-while 'history and criticism' in subjectText: subjectText.remove('history and criticism')
-    
+# may end up wanting this to be an external document
+stopwords = ['accessible book', 'protected daisy',
+             'juvenile literature', 'juvenile nonfiction',
+             'juvenile fiction']
 
+for stopword in stopwords:
+    while stopword in subjectText:
+        subjectText.remove(stopword)
+        
+print('Cleaned Subject List: ', subjectText)
 
+'''
 regionText = []
 regions = soup.find_all('mods:geographic')
 for region in regions:
@@ -80,15 +97,15 @@ most_common_title = [word for word, word_count in Counter(titleText).most_common
 #print(most_common_title)
 
 most_common_geographic = [word for word, word_count in Counter(regionText).most_common(1)]
+'''
 
 most_common_subject = [word for word, word_count in Counter(subjectText).most_common(5)]
 
 # most_common_title = [word for word, word_count in Counter(titleText).most_common(5)]
 
-fullText = subjectText + regionText
 
-most_common= [word for word, word_count in Counter(fullText).most_common(5)]
 
-print(most_common)
+print(most_common_subject)
 
 #print(most_common)
+''

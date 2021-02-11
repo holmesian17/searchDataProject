@@ -22,6 +22,13 @@ query = query.lower()
 
 site= 'https://api.lib.harvard.edu/v2/items?q='+query+'&limit=250'
 
+# if search by title
+#titleSearch = 'https://api.lib.harvard.edu/v2/items?titleInfo='+query+'&limit=250'
+
+# if search by author
+#authorSearch = 'https://api.lib.harvard.edu/v2/items?subject.name='+query+'&limit=250'
+
+
 # place into their regex
 site = site.replace(" ", "%20")
 site = str(site)

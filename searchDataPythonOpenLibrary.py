@@ -1,7 +1,3 @@
-try:
-    import urllib.request as urllib2
-except ImportError:
-    import urllib2
 import csv
 import hashlib
 import json
@@ -16,7 +12,7 @@ import time
 # CSV header names
 fieldnames = ['Search','Corrected','Timestamp','IP',
               'Search Function','Cat1','Cat2','Cat3',
-              'Cat4','Cat5']
+              'Cat4','Cat5',"Custom Cat1", "Custom Cat2"]
 
 search_file_in = open('rawDataSampleWithCats.csv', "rt")
 reader = csv.DictReader(search_file_in)
@@ -34,7 +30,7 @@ with open("categoryDict.json", "r") as config_file:
 print(category_dict)
 '''
 spell = SpellChecker(distance=1)
-       
+
 
 for row in reader:
     #hashing ip address
@@ -121,6 +117,11 @@ for row in reader:
             row['Cat5'] = most_common_subject[4]
     except:
         pass
+    
+    if query == "fort collins":
+        row["Custom Cat1"] = "fort collins"
+    else:
+        row["Custom Cat1"] = ""
 # needs to handle if there isn't a 5th term, 4th term, etc.
         
     

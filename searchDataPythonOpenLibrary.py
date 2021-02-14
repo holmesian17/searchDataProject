@@ -118,10 +118,21 @@ for row in reader:
     except:
         pass
     
+    custom_categories = {"fort collins":"fort collins", "dog":"pets", "dogs":"pets",
+                         }
+    
+    if query in custom_categories:
+        row["Custom Cat1"] = custom_categories.get(query)
+        print("Custom: ", custom_categories.get(query))
+    else:
+        row["Custom Cat1"] = ""
+
+    '''
     if query == "fort collins":
         row["Custom Cat1"] = "fort collins"
     else:
         row["Custom Cat1"] = ""
+    '''
 # needs to handle if there isn't a 5th term, 4th term, etc.
         
     

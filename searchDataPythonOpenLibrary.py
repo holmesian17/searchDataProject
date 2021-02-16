@@ -55,8 +55,9 @@ for row in reader:
             row['Language'] = language
     except:
         continue
+    '''    
     row['Corrected'] = corrected_term #1
-    '''
+    
     query = corrected_term.lower()
     site = 'https://openlibrary.org/search.json?q='+query+'&limit=100'
 
@@ -121,6 +122,8 @@ for row in reader:
             row['Cat4'] = most_common_subject[3]
             row['Cat5'] = most_common_subject[4]
     except:
+        # THIS NEEDS TO HANDLE FEWER THAN 5 SUBJECTS
+        # AND STILL PUT THE SEARCH TERM IN THE PROCESSED DOCUMENT
         pass
     
     custom_categories = {"fort collins":"fort collins", "dog":"pets", "dogs":"pets",

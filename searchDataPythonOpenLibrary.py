@@ -3,16 +3,15 @@ import hashlib
 import json
 from spellchecker import SpellChecker
 import os,sys
-import pickle
-import pandas as pd
 import requests
 from collections import Counter
 import time
+from langdetect import detect
 
 # CSV header names
 fieldnames = ['Search','Corrected','Timestamp','IP',
               'Search Function','Cat1','Cat2','Cat3',
-              'Cat4','Cat5',"Custom Cat1", "Custom Cat2"]
+              'Cat4','Cat5',"Custom Cat1", "Custom Cat2", "Language"]
 
 search_file_in = open('rawDataSampleWithCats.csv', "rt")
 reader = csv.DictReader(search_file_in)
@@ -21,16 +20,12 @@ search_file_out = open('dataSampleFormattedOpenLibrary.csv', "wt")
 writer = csv.DictWriter(search_file_out,
                         fieldnames=(fieldnames))
 writer.writeheader()
-# categoryDict = {}
-# need to save these to an external file to pull from
-'''
-with open("categoryDict.json", "r") as config_file:
-    category_dict = json.load(config_file)
 
-print(category_dict)
-'''
+
 spell = SpellChecker(distance=1)
 
+# needs to be able to handle and record JSON exceptions that
+# randomly pop up
 
 for row in reader:
     #hashing ip address
@@ -46,14 +41,24 @@ for row in reader:
     # category = row['Category'] #5
     
     term = term.lower()
-    
-    # there's an easier way to add to dict in the readthedocs for pyspellchecker
     corrected_term = spell.correction(term)
-    
+
+    '''
+    # have it determine if it's closest to spanish or english
+    # exclude other languages to minimize the junk we were getting
+    try:
+        language = detect(term)
+        if term == 'en':
+            corrected_term = spell.correction(term)
+        else:
+            corrected_term = term
+            row['Language'] = language
+    except:
+        continue
     row['Corrected'] = corrected_term #1
-    
+    '''
     query = corrected_term.lower()
-    site = 'https://openlibrary.org/search.json?q='+query+'&limit=500'
+    site = 'https://openlibrary.org/search.json?q='+query+'&limit=100'
 
     site = site.replace(" ", "+") # for OpenLibrary
     site = str(site)
@@ -119,7 +124,7 @@ for row in reader:
         pass
     
     custom_categories = {"fort collins":"fort collins", "dog":"pets", "dogs":"pets",
-                         }
+                         "unicorns":"children"}
     
     if query in custom_categories:
         row["Custom Cat1"] = custom_categories.get(query)
